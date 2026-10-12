@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>環保袋使用紀錄</title>
+  <style>
+    body { font-family: system-ui, sans-serif; text-align: center; padding: 2rem; background: #f0f9f4; }
+    .count { font-size: 3.5rem; font-weight: bold; color: #166534; margin: 1rem 0; }
+    .slogan { font-size: 1.3rem; margin: 1.5rem 0; min-height: 3em; }
+    button { font-size: 1.2rem; padding: 1rem 2rem; border: none; border-radius: 12px; background: #16a34a; color: white; cursor: pointer; }
+    button:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+  <h1>🌱 這張環保袋已被使用</h1>
+  <div class="count" id="count">—</div>
+  <p>次（累計掃描次數）</p>
+
+  <div class="slogan" id="slogan"></div>
+
+  <button onclick="playSlogan()">🔊 點我聽幽默減塑標語</button>
+
+  <audio id="audio"></audio>
+
+  <script>
+    // 從網址讀取計數（NFC.cool 格式大概是 ?nfc=標籤IDx000123）
+    const params = new URLSearchParams(location.search);
+    const nfc = params.get('nfc') || '';
+    let count = '—';
+    if (nfc.includes('x')) {
+      const parts = nfc.split('x');
+      count = parseInt(parts[1], 10) || '—';
+    }
+    document.getElementById('count').textContent = count;
+
+    // 幽默標語（可自行增減）
+    const slogans = [
+      "塑膠袋：我已正式退休，請繼續使用這位綠色員工！",
+      "今天又拒絕一次塑膠，地球給你比了個讚 👍",
+      "環保袋：我不是袋子，我是未來的守護者。",
+      "少用一個塑膠袋，多給海龜一條生路。",
+      "這次掃碼又成功減塑！你超棒的！",
+      "塑膠：再見了，我要去當垃圾了……等等，我不要！",
+      "用這張袋子的人，都是地球的好朋友 🌍"
+    ];
+
+    // 隨機顯示文字標語
+    const sloganEl = document.getElementById('slogan');
+    sloganEl.textContent = slogans[Math.floor(Math.random() * slogans.length)];
+
+    // 語音檔（請把你自己錄的 mp3 放到同一個倉庫，路徑改成實際檔名）
+    const audios = [
+      'slogan1.mp3',
+      'slogan2.mp3',
+      'slogan3.mp3'
+      // 可繼續加
+    ];
+
+    function playSlogan() {
+      const audio = document.getElementById('audio');
+      audio.src = audios[Math.floor(Math.random() * audios.length)];
+      audio.play().catch(() => alert('請點擊允許播放聲音'));
+    }
+  </script>
+</body>
+</html>
