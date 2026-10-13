@@ -7,34 +7,42 @@
   <style>
     body { font-family: system-ui, sans-serif; text-align: center; padding: 2rem; background: #f0f9f4; }
     .count { font-size: 3.5rem; font-weight: bold; color: #166534; margin: 1rem 0; }
-    .slogan { font-size: 1.3rem; margin: 1.5rem 0; min-height: 3em; }
-    button { font-size: 1.2rem; padding: 1rem 2rem; border: none; border-radius: 12px; background: #16a34a; color: white; cursor: pointer; }
+    .slogan { font-size: 1.2rem; margin: 1.5rem 0; min-height: 4em; padding: 0 1rem; line-height: 1.5; }
+    button { font-size: 1.2rem; padding: 1rem 2rem; border: none; border-radius: 12px; background: #16a34a; color: white; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     button:active { transform: scale(0.97); }
+    .tag-id { font-size: 0.9rem; color: #666; margin-top: 1rem; }
   </style>
 </head>
 <body>
   <h1>🌱 這張環保袋已被使用</h1>
-  <div class="count" id="count">—</div>
+  <div class="count" id="count">載入中...</div>
   <p>次（累計掃描次數）</p>
 
-  <div class="slogan" id="slogan"></div>
+  <div class="slogan" id="slogan">載入標語中...</div>
 
-  <button onclick="playSlogan()">🔊 點我聽幽默減塑標語</button>
+  <button onclick="playVoice()">🔊 點我聽幽默減塑標語</button>
 
-  <audio id="audio"></audio>
+  <div class="tag-id" id="tagDisplay"></div>
 
   <script>
-    // 從網址讀取計數（NFC.cool 格式大概是 ?nfc=標籤IDx000123）
+    // 1. 抓取網址中的 tag 參數（支援多個 NFC，例如 ?tag=bag01 或 ?tag=bag02）
     const params = new URLSearchParams(location.search);
-    const nfc = params.get('nfc') || '';
-    let count = '—';
-    if (nfc.includes('x')) {
-      const parts = nfc.split('x');
-      count = parseInt(parts[1], 10) || '—';
-    }
-    document.getElementById('count').textContent = count;
+    const tagId = params.get('tag') || 'default-bag';
+    document.getElementById('tagDisplay').textContent = `目前袋子編號：${tagId}`;
 
-    // 幽默標語（可自行增減）
+    const storageKey = 'eco_bag_visited_' + tagId;
+
+    // 2. 呼叫雲端計數器（每個 tagId 會有獨立的次數）
+    fetch(`https://api.countapi.xyz/hit/jessie-eco-bag-counter/${tagId}`)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('count').textContent = data.value;
+      })
+      .catch(error => {
+        document.getElementById('count').textContent = '1';
+      });
+
+    // 3. 100 個創意幽默標語清單
     const slogans = [
       "塑膠袋：我已正式退休，請繼續使用這位綠色員工！",
       "今天又拒絕一次塑膠，地球給你比了個讚 👍",
@@ -42,25 +50,129 @@
       "少用一個塑膠袋，多給海龜一條生路。",
       "這次掃碼又成功減塑！你超棒的！",
       "塑膠：再見了，我要去當垃圾了……等等，我不要！",
-      "用這張袋子的人，都是地球的好朋友 🌍"
+      "用這張袋子的人，都是地球的好朋友 🌍",
+      "袋子在手，時尚我有，北極熊謝謝你！",
+      "每一次打開我都像在拆禮物，而你就是環保大使。",
+      "這袋子比你的前任還長情，請好好珍惜它。",
+      "今天減塑達人就是你，帥氣指數破表！",
+      "拒絕塑膠袋，從你我開始，地球給您按個讚。",
+      "袋子長壽的祕訣，就是讓你頻繁帶它出門散步。",
+      "你看起來很有智慧，難怪會選這個環保袋。",
+      "塑膠袋哭暈在廁所，因為你選了這個帥氣的綠色夥伴。",
+      "拯救地球不用披斗篷，拎著這個袋子就行。",
+      "今天多用一次它，明天地球就少一個負擔。",
+      "這咖袋子質感滿分，連路過的貓都忍不住回頭看。",
+      "低碳生活新時尚，你走在潮流的最前端！",
+      "感謝您今天為地球省下一口呼吸的空間。",
+      "環保不只是口號，看你掏出袋子的動作就知道是真的。",
+      "小小的舉動，大大的改變，為你的綠色生活乾杯！",
+      "袋子默默許願：希望能跟你去更多不同的超商和超市。",
+      "你今天看起來特別耀眼，是因為帶著環保的光芒嗎？",
+      "拒絕一次性，擁抱無限可能，這袋子跟你一樣優秀。",
+      "環保袋OS：主人今天帶我出門了，好開心呀！",
+      "地球悄悄傳line給妳：『謝謝妳今天選了我』。",
+      "減塑這條路上，有你真好，真的。",
+      "把塑膠袋氣哭的祕密，就是隨身攜帶這個好幫手。",
+      "今天的碳足跡，因為你而變得輕盈許多。",
+      "環保袋：主人，今天想去哪裡採購呀？我準備好了！",
+      "拒絕塑膠，從養成習慣開始，你已經做得超棒了。",
+      "這張袋子很輕，但它承載著你對地球的愛與責任。",
+      "每次掃碼，都是給地球的一封溫馨情書 💌",
+      "別懷疑，你現在就是拯救海洋生物的英雄本人。",
+      "環保袋：我的存在，就是為了讓你跟塑膠袋說掰掰。",
+      "今天又拯救了一隻無辜的海龜，太帥了吧！",
+      "拎著環保袋的姿態，是世界上最美的風景之一。",
+      "環保不是一陣子，而是一輩子的浪漫。",
+      "謝謝你讓這個世界少了一個飄在風中的塑膠袋。",
+      "低碳生活，從重複利用這個小動作開始。",
+      "袋子：只要你需要，我隨時都可以出發！",
+      "今天的小確幸，就是又完成了一次完美的減塑行動。",
+      "你的環保魂正在熊熊燃燒，連太陽都覺得溫暖。",
+      "不塑之客報到！地球今天也對你微笑呢。",
+      "環保袋比你想的還要耐裝，就像你的耐心一樣無限大。",
+      "每一次的拒絕塑膠，都是對地球最深情的告白。",
+      "帶著它出門，連路邊的小花都對你敬禮 🌸",
+      "減塑生活日記：今天主人又帥氣地使用了我一次。",
+      "地球生態圈感謝你的大力支持與神救援！",
+      "環保袋：主人，我已經準備好幫你裝滿戰利品了！",
+      "拒絕一次性塑料，讓我們的生活更乾淨、更純粹。",
+      "這不是普通的袋子，這是你守護地球的榮譽勳章。",
+      "今天又解鎖了一次環保成就，經驗值大增！",
+      "袋子OS：被主人需要的感覺，真的好幸福喔～",
+      "環保很酷，而你剛好走在最酷的道路上。",
+      "讓減塑成為一種本能，你已經做得很完美了。",
+      "地球說：今天空氣特別清新，多虧了你的環保袋。",
+      "把愛留在袋子裡，把綠色帶回每一個日常。",
+      "這卡袋子的使命，就是陪你走過無數個低碳的日子。",
+      "每一次使用，都是對大自然最溫柔的擁抱。",
+      "拒絕塑膠袋的誘惑，你展現了無與倫比的定力！",
+      "環保袋：主人，今天也要一起當個愛地球的乖寶寶喔！",
+      "帶著笑容與環保袋出門，今天運氣一定會超好。",
+      "你與環保袋的完美默契，連環保局長看了都稱讚。",
+      "生活可以很簡單，減塑也可以很時尚。",
+      "讓地球深呼吸，就從你每一次掏出這個袋子開始。",
+      "袋子：雖然我沒有腳，但我願意陪你走遍全世界。",
+      "減塑大作戰，今天你又成功拿下漂亮的一勝！",
+      "謝謝你，讓這世界因為你的選擇而變得更美好一點。",
+      "環保袋的超能力：裝得下全世界，也裝滿了你的溫柔。",
+      "今天又少用了一個塑膠袋，地球的微笑多了一分。",
+      "不塑時尚，由你定義，今天造型給滿分！",
+      "帶著環保袋出門的你，背後彷彿有道耀眼的光芒 ✨",
+      "環保袋：今天也要努力不懈地為地球減輕負擔喔！",
+      "拒絕塑膠，擁抱綠能，你的品味真的無話可說。",
+      "每一次掃碼，都是你對未來世界投下的美好一票。",
+      "袋子：主人，我已經準備好展開今天的冒險了！",
+      "減塑生活不費力，只需要一個懂你的環保袋。",
+      "謝謝你成為地球最強而有力的後盾。",
+      "環保袋的真心話：能跟著你，是我這輩子最大的福氣。",
+      "今天又成功擊退一個塑膠袋，太強啦！",
+      "讓綠色生活成為日常，你就是最佳代言人。",
+      "袋子OS：主人今天看起來心情很好，我也跟著開心起來了！",
+      "減塑不落人後，你的每一步都走得非常有意義。",
+      "環保袋：別看我小小的，我可是很能裝的綠色戰士！",
+      "今天多了一次減塑紀錄，離環保大師又更近了一步。",
+      "帶著環保袋的你，散發著顧迷人的智慧光芒。",
+      "地球向你發送了一則感謝訊息：『有你真好！』",
+      "環保袋：主人，今天也要繼續保持這個好習慣喔！",
+      "拒絕塑膠，從細節做起，你一直是大家的榜樣。",
+      "這咖袋子越看越好看，就像你善良的心一樣。",
+      "減塑生活不打烊，環保袋隨時待命！",
+      "每一次的堅持，都在為地球種下一棵希望的小樹。",
+      "環保袋：主人，今天我們一起去拯救世界吧！",
+      "拒絕一次性塑膠，就是對大自然最好的溫柔以待。",
+      "今天又達成了一次完美的減塑任務，掌聲鼓勵 👏",
+      "環保袋：有你的陪伴，我的袋生過得非常有價值。",
+      "綠色日常，從你我手中這個小小的袋子開始發光。"
     ];
 
-    // 隨機顯示文字標語
     const sloganEl = document.getElementById('slogan');
-    sloganEl.textContent = slogans[Math.floor(Math.random() * slogans.length)];
+    let currentText = "";
 
-    // 語音檔（請把你自己錄的 mp3 放到同一個倉庫，路徑改成實際檔名）
-    const audios = [
-      'slogan1.mp3',
-      'slogan2.mp3',
-      'slogan3.mp3'
-      // 可繼續加
-    ];
+    // 4. 判斷是否為第一次感應
+    if (!localStorage.getItem(storageKey)) {
+      currentText = "第一次使用我也，接下來也請繼續使用我喔，我的乖乖。";
+      localStorage.setItem(storageKey, 'true');
+    } else {
+      const randomIndex = Math.floor(Math.random() * slogans.length);
+      currentText = slogans[randomIndex];
+    }
+    sloganEl.textContent = currentText;
 
-    function playSlogan() {
-      const audio = document.getElementById('audio');
-      audio.src = audios[Math.floor(Math.random() * audios.length)];
-      audio.play().catch(() => alert('請點擊允許播放聲音'));
+    // 5. 語音朗讀功能（結合瀏覽器內建的語音合成，不需要另外錄 100 個音檔！）
+    function playVoice() {
+      if ('speechSynthesis' in window) {
+        // 先停止任何正在朗讀的聲音
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(currentText);
+        utterance.lang = 'zh-TW'; // 設定為繁體中文
+        utterance.rate = 1.0;   // 語速
+        utterance.pitch = 1.1;  // 聲音音調（稍微活潑一點）
+        
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert('您的瀏覽器不支援語音播放功能！');
+      }
     }
   </script>
 </body>
